@@ -118,6 +118,7 @@ view(45, 30);
 
 theta_p = pi/2 - atan(norm(r_cs_mars)/(R_sun + R_mars));
 
+figure
 subplot(2,2,1)
 plot(t_total, theta_e)
 xlabel("theta_e [rad]")
@@ -187,4 +188,5 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
 
