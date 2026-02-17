@@ -44,6 +44,7 @@ R_sun = 696300;                        % Sun Radius (km)
 
 % ----------------------
 % Main Code
+% ----------------------
 theta_p = (pi/2)-atan((norm (r_mars_vec))/(R_sun + R_mars));
 
 %%Umbra Angle theta_u
@@ -53,7 +54,7 @@ theta_p = (pi/2)-atan((norm (r_mars_vec))/(R_sun + R_mars));
 %%Plotting theta_u
 %subplot(2,2,2)
 %plot(t, theta_u)
-% ----------------------
+
 
 % ----------------------
 % JPL HORIZONS API
@@ -102,6 +103,7 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         v_vec = [C{6}, C{7}, C{8}];
     end
 end
+
 
 
 
