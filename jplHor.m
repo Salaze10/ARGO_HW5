@@ -19,7 +19,8 @@ clc
 %-----------------------
 mu  = 1.32712440041279e11;             % Grav param of Sun (km^3/s^2)
 mu_mars = 4.2828375214e4;              % Grav param of Mars (km^3/s^2)
-r_orbit = 3389.5 + 20000;              % Arrival Orbital Radius (km)
+r_mars = 3389.5;                       % Mars Radius (km)
+r_spacecraft = r_mars + 20000;         % Spacecraft Orbit Altitude
 
 % ----------------------
 % Time Window Setup
