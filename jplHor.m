@@ -113,6 +113,33 @@ zlabel('Z (km)', 'FontSize', 14);
 view(45, 30);
 
 % ----------------------
+% Subplot
+% ----------------------
+
+theta_p = pi/2 - atan(norm(r_cs_mars)/(R_sun + R_mars));
+
+subplot(2,2,1)
+plot(t_total, theta_e)
+xlabel("theta_e [rad]")
+ylabel("time [days]")
+grid on
+subplot(2,2,2)
+plot(t_total, theta_u)
+xlabel("theta_u [rad]")
+ylabel("time [days]")
+grid on
+subplot(2,2,3)
+plot(t_total, theta_p)
+xlabel("theta_p [rad]")
+ylabel("time [days]")
+grid on
+subplot(2,2,4)
+plot(t_total, s_percent)
+xlabel("% Sunlight")
+ylabel("time [days]")
+grid on
+
+% ----------------------
 % JPL HORIZONS API
 % ----------------------
 function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
@@ -160,3 +187,4 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
