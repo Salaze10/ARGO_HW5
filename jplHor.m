@@ -15,14 +15,6 @@ close all
 clc
 
 % ----------------------
-% Initial Information
-%-----------------------
-mu  = 1.32712440041279e11;             % Grav param of Sun (km^3/s^2)
-mu_mars = 4.2828375214e4;              % Grav param of Mars (km^3/s^2)
-r_mars = 3389.5;                       % Mars Radius (km)
-r_spacecraft = r_mars + 20000;         % Spacecraft Orbit Altitude
-
-% ----------------------
 % Time Window Setup
 %-----------------------
 % Depature Window (Gregorian dates)
@@ -40,9 +32,15 @@ fprintf('Fetching Mars Ephemeris from JPL Horizons...\n');
 [r_mars_vec, v_mars_vec]   = get_jpl_horizons('499', start1, end1); % Mars (499)
 
 % ----------------------
-% Storage Arrays & Counter
-% ----------------------
-num_sim = length(jd1);             % Length of Simulation Window
+% Initial Information
+%-----------------------
+mu  = 1.32712440041279e11;             % Grav param of Sun (km^3/s^2)
+mu_mars = 4.2828375214e4;              % Grav param of Mars (km^3/s^2)
+R_mars = 3389.5;                       % Mars Radius (km)
+R_sun = 696300;                        % Sun Radius (km)
+%r_spacecraft                           % Radius of Spacecraft Orbit Altitude
+%r_mars_vec                            % Distance from Sun to Mars
+
 
 % ----------------------
 % Main Code
