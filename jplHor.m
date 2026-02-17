@@ -95,6 +95,8 @@ axis equal; grid on;
 title('Spacecraft Trajectory (MCI Frame)');
 xlabel('X (km)'); ylabel('Y (km)');
 
+theta_p = pi/2 - atan(norm(r_sc_mars)/(R_sun + R_mars)); %radians
+
 % ----------------------
 % JPL HORIZONS API
 % ----------------------
@@ -143,3 +145,4 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
