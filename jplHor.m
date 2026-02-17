@@ -85,23 +85,32 @@ for i = 1:length(t_vec)
     % Store in matrix
     r_sc_mars(i, :) = [x_orbit, y_orbit, z_orbit];
 end
-
-% Plotting to Verify
-figure;
-plot(r_sc_mars(:,1), r_sc_mars(:,2));
+% ----------------------
+% Plotting to Verify (3D)
+% ----------------------
+figure('Color', 'w');
 hold on;
-viscircles([0,0], R_mars, 'Color', 'r'); % Draw Mars
-axis equal; grid on;
-title('Spacecraft Trajectory (MCI Frame)');
-xlabel('X (km)'); ylabel('Y (km)');
+grid on;
+axis equal;
 
-theta_p = pi/2 - atan(norm(r_sc_mars)/(R_sun + R_mars)); %radians
+% Plot the Spacecraft Trajectory
+plot3(r_sc_mars(:,1), r_sc_mars(:,2), r_sc_mars(:,3), 'b', 'LineWidth', 1.5);
 
-subplot(2,2,3)
-plot(t_total, theta_p)
-xaxis("time [days]")
-yaxis("theta_p [rad]")
-grid on
+% Plot Mars (As a 3D Sphere
+[X, Y, Z] = sphere(50); 
+X = X * R_mars;
+Y = Y * R_mars;
+Z = Z * R_mars;
+mars_surf = surf(X, Y, Z);
+
+% Label PLot
+title('Spacecraft Trajectory (MCI Frame)', 'FontSize', 16);
+xlabel('X (km)', 'FontSize', 14);
+ylabel('Y (km)', 'FontSize', 14);
+zlabel('Z (km)', 'FontSize', 14);
+
+% Set viewing angle
+view(45, 30);
 
 % ----------------------
 % JPL HORIZONS API
@@ -151,6 +160,3 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
-
-
-
