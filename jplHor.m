@@ -115,35 +115,40 @@ view(45, 30);
 % ----------------------
 % Subplot
 % ----------------------
+r_mars_norms = vecnorm(r_mars_vec, 2, 2);
+r_sc_norms   = vecnorm(r_sc_mars, 2, 2);
 
-h_u = (R_mars*norm(r_mars_vec))/(R_sun-R_mars);
-theta_p = pi/2 - atan(norm(r_sc_mars)/(R_sun + R_mars));
-theta_e = acos((dot(r_mars_vec, r_sc_mars))/(norm(r_mars_vec)*norm(r_sc_mars))); 
-theta_u = atan(R_mars/h_u);
+theta_e = acos( dot(r_mars_vec, r_sc_mars, 2) ./ (r_mars_norms .* r_sc_norms) );
+theta_p = pi/2 - atan( r_sc_norms ./ (R_sun + R_mars) );
+
+h_u = (R_mars .* r_mars_norms) ./ (R_sun - R_mars);
+theta_u = atan(R_mars ./ h_u);
 [S_percent, gd1] = Scalc(ecc,alt,R_mars,R_sun,mu_mars);
 
 figure
 subplot(2,2,1)
-plot(t_total/14440, theta_e)
+plot(gd1, theta_e)
 ylabel("theta_e [rad]")
 xlabel("time [days]")
+ylim([0 pi]);
 grid on
 subplot(2,2,2)
-plot(t_total/1440, theta_u)
+plot(gd1, theta_u)
 ylabel("theta_u [rad]")
 xlabel("time [days]")
 grid on
 subplot(2,2,3)
-plot(t_total/1440, theta_p)
+plot(gd1, theta_p)
 ylabel("theta_p [rad]")
 xlabel("time [days]")
 grid on
 subplot(2,2,4)
 plot(gd1, S_percent,'LineWidth',1.5);
 ylabel("% Sunlight")
-xlabel("time [1/2 days]")
+xlabel("time [days]")
 ylim([0 100]);
 grid on
+
 
 function [S_percent, gd] = Scalc(e,alt,R_mars,R_sun,mu_mars)
     r_a = R_mars + alt;             % apoapsis radius (km)
@@ -294,14 +299,3 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
-
-
-
-
-
-
-
-
-
-
-
