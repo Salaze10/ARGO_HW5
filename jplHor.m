@@ -139,16 +139,9 @@ ylabel("theta_p [rad]")
 xlabel("time [days]")
 grid on
 subplot(2,2,4)
-plot(t_total, S_percent)
+plot(gd1, S_percent,'LineWidth',1.2);
 ylabel("% Sunlight")
 xlabel("time [days]")
-grid on
-
-% Plot
-figure(5);
-plot(gd1, S_percent,'LineWidth',1.2);
-xlabel('Time');
-ylabel('S (%)');
 ylim([0 100]);
 grid on
 
@@ -301,6 +294,7 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
 
 
 
