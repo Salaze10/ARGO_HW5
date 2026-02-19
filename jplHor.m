@@ -1,6 +1,6 @@
 %----------------------
-% Daniel Newallis
-% Orbit Propogation of ARGO
+% Argo
+% Orbit Light Graphs  of ARGO
 % Gravational Parameters from JPL
 %----------------------
 % ----------------------
@@ -94,14 +94,23 @@ grid on;
 axis equal;
 
 % Plot the Spacecraft Trajectory
-plot3(r_sc_mars(:,1), r_sc_mars(:,2), r_sc_mars(:,3), 'b', 'LineWidth', 1.5, );
+plot3(r_sc_mars(:,1), r_sc_mars(:,2), r_sc_mars(:,3), 'b', 'LineWidth', 1.5);
 
-% Plot Mars (As a 3D Sphere
-[X, Y, Z] = sphere(50); 
+% Load Mars texture image
+mars_texture = imread('mars.jpg'); 
+
+% Generate sphere
+[X, Y, Z] = sphere(100); 
 X = X * R_mars;
 Y = Y * R_mars;
 Z = Z * R_mars;
-mars_surf = surf(X, Y, Z, 'FaceAlpha', 0.9, 'EdgeAlpha', 0, 'FaceColor','#AD6242');
+
+% Plot textured sphere
+mars_surf = surf(X, Y, Z, ...
+    'CData', mars_texture, ...
+    'FaceColor', 'texturemap', ...
+    'EdgeColor', 'none', ...
+    'FaceLighting', 'none');
 
 % Label PLot
 title('Spacecraft Trajectory (MCI Frame)', 'FontSize', 16);
@@ -110,38 +119,50 @@ ylabel('Y (km)', 'FontSize', 14);
 zlabel('Z (km)', 'FontSize', 14);
 
 % Set viewing angle
-view(35, 20);
+view(45, 30);
 
 % ----------------------
 % Subplot
 % ----------------------
+
+% Convert vectors into scalars
 r_mars_norms = vecnorm(r_mars_vec, 2, 2);
 r_sc_norms   = vecnorm(r_sc_mars, 2, 2);
 
+% Eclipse angle (rad)
 theta_e = acos( dot(r_mars_vec, r_sc_mars, 2) ./ (r_mars_norms .* r_sc_norms) );
+% Penumbra angle (rad)
 theta_p = pi/2 - atan( r_sc_norms ./ (R_sun + R_mars) );
-
+% Umbra cone height (km)
 h_u = (R_mars .* r_mars_norms) ./ (R_sun - R_mars);
+% Umbra cone angle (rad)
 theta_u = atan(R_mars ./ h_u);
+
+% Fucntion for % sunlight
 [S_percent, gd1] = Scalc(ecc,alt,R_mars,R_sun,mu_mars);
 
+% Subplots of obrital light angles and % sunlight
 figure
+% Plot eclipse angle
 subplot(2,2,1)
 plot(gd1, theta_e)
 ylabel("theta_e [rad]")
 xlabel("time [days]")
 ylim([0 pi]);
 grid on
+% Plot umbra cone angle
 subplot(2,2,2)
 plot(gd1, theta_u)
 ylabel("theta_u [rad]")
 xlabel("time [days]")
 grid on
+% Plot penumbra angle
 subplot(2,2,3)
 plot(gd1, theta_p)
 ylabel("theta_p [rad]")
 xlabel("time [days]")
 grid on
+% Plot % sunlight
 subplot(2,2,4)
 plot(gd1, S_percent,'LineWidth',1.5);
 ylabel("% Sunlight")
@@ -299,5 +320,3 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
-
-
