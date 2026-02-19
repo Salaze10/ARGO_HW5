@@ -1,6 +1,6 @@
 %----------------------
 % ARGO
-% Orbit Light Graphs  of ARGO
+% Orbit Light Graphs of ARGO
 % Gravational Parameters from JPL
 %----------------------
 % ----------------------
@@ -113,7 +113,7 @@ mars_surf = surf(X, Y, Z, ...
     'FaceLighting', 'none');
 
 % Label PLot
-title('Spacecraft Trajectory (MCI Frame)', 'FontSize', 16);
+title('ARGO Trajectory (MCI Frame)', 'FontSize', 16);
 xlabel('X (km)', 'FontSize', 14);
 ylabel('Y (km)', 'FontSize', 14);
 zlabel('Z (km)', 'FontSize', 14);
@@ -125,6 +125,7 @@ view(45, 30);
 % Subplot
 % ----------------------
 
+% AI used to assist as code was ecountering error
 % Convert vectors into scalars
 r_mars_norms = vecnorm(r_mars_vec, 2, 2);
 r_sc_norms   = vecnorm(r_sc_mars, 2, 2);
@@ -320,4 +321,3 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
-
