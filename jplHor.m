@@ -124,24 +124,24 @@ theta_u = atan(R_mars/h_u);
 
 figure
 subplot(2,2,1)
-plot(t_total, theta_e)
+plot(t_total/14440, theta_e)
 ylabel("theta_e [rad]")
 xlabel("time [days]")
 grid on
 subplot(2,2,2)
-plot(t_total, theta_u)
+plot(t_total/1440, theta_u)
 ylabel("theta_u [rad]")
 xlabel("time [days]")
 grid on
 subplot(2,2,3)
-plot(t_total, theta_p)
+plot(t_total/1440, theta_p)
 ylabel("theta_p [rad]")
 xlabel("time [days]")
 grid on
 subplot(2,2,4)
-plot(gd1, S_percent,'LineWidth',1.2);
+plot(gd1, S_percent,'LineWidth',1.5);
 ylabel("% Sunlight")
-xlabel("time [days]")
+xlabel("time [1/2 days]")
 ylim([0 100]);
 grid on
 
@@ -294,6 +294,7 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
 
 
 
