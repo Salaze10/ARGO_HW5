@@ -32,9 +32,9 @@ R_mars = 3389.5;                       % Mars Radius (km)
 R_sun = 696300;                        % Sun Radius (km)
 
 % Spacecraft Orbit Parameters
-ecc = 0.8;                             % eccentricity
+ecc = 0.75;                             % eccentricity
 inc = 0;                               % deg
-alt = 20000;                           % km
+alt = 25000;                           % km
 
 % Orbit Geometry & Initial State
 r_sc_p = R_mars + alt;                         % Radius at Apoapsis (km)
@@ -301,6 +301,7 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
 
 
 
