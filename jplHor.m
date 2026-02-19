@@ -94,14 +94,14 @@ grid on;
 axis equal;
 
 % Plot the Spacecraft Trajectory
-plot3(r_sc_mars(:,1), r_sc_mars(:,2), r_sc_mars(:,3), 'b', 'LineWidth', 1.5);
+plot3(r_sc_mars(:,1), r_sc_mars(:,2), r_sc_mars(:,3), 'b', 'LineWidth', 1.5, );
 
 % Plot Mars (As a 3D Sphere
 [X, Y, Z] = sphere(50); 
 X = X * R_mars;
 Y = Y * R_mars;
 Z = Z * R_mars;
-mars_surf = surf(X, Y, Z);
+mars_surf = surf(X, Y, Z, 'FaceAlpha', 0.9, 'EdgeAlpha', 0, 'FaceColor','#AD6242');
 
 % Label PLot
 title('Spacecraft Trajectory (MCI Frame)', 'FontSize', 16);
@@ -299,4 +299,5 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
 
