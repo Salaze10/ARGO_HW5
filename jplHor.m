@@ -116,7 +116,10 @@ view(45, 30);
 % Subplot
 % ----------------------
 
+h_u = (R_mars*norm(r_mars_vec))/(R_sun-R_mars);
 theta_p = pi/2 - atan(norm(r_cs_mars)/(R_sun + R_mars));
+theta_e = acos((dot(r_mars_vec, r_sc_mars)/(norm(r_mars_vec)*norm(r_sc_mars); 
+theta_u = atan(R_mars/h_u);
 
 figure
 subplot(2,2,1)
@@ -299,6 +302,7 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
 
 
 
