@@ -110,7 +110,7 @@ ylabel('Y (km)', 'FontSize', 14);
 zlabel('Z (km)', 'FontSize', 14);
 
 % Set viewing angle
-view(45, 30);
+view(35, 20);
 
 % ----------------------
 % Subplot
@@ -299,3 +299,4 @@ function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
         r_vec = [C{3}, C{4}, C{5}];
         v_vec = [C{6}, C{7}, C{8}];
 end
+
