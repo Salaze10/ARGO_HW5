@@ -131,13 +131,15 @@ r_mars_norms = vecnorm(r_mars_vec, 2, 2);
 r_sc_norms   = vecnorm(r_sc_mars, 2, 2);
 
 % Eclipse angle (rad)
-theta_e = acos( dot(r_mars_vec, r_sc_mars, 2) ./ (r_mars_norms .* r_sc_norms) );
-% Penumbra angle (rad)
-theta_p = pi/2 - atan( r_sc_norms ./ (R_sun + R_mars) );
+theta_e = acos(dot(r_mars_vec, r_sc_mars, 2)./(r_mars_norms .* r_sc_norms));
+
 % Umbra cone height (km)
-h_u = (R_mars .* r_mars_norms) ./ (R_sun - R_mars);
+h_u = (R_mars .* r_mars_norms)./(R_sun - R_mars);
 % Umbra cone angle (rad)
 theta_u = atan(R_mars ./ h_u);
+
+% Penumbra angle (rad)
+theta_p = pi/2 - atan(r_mars_norms./(R_sun + R_mars));
 
 % Fucntion for % sunlight
 [S_percent, gd1] = Scalc(ecc,alt,R_mars,R_sun,mu_mars);
