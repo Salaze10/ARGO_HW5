@@ -29,6 +29,7 @@ alphasp = ; % Absorptivity [0-1]
 nusp = ; % Efficeny [0-1]
 Msp = ; % Mass [kg]
 Asp = ; % Area per panel [m^2]
+Lyr = ; % Degradation rate for SP
 
 % Orbital Characteristics
 
@@ -36,6 +37,9 @@ te = ; % Longest eclipse cycle [hr]
 ts = ; % shortestday cycle [hr]
 Pl = ; % peak power [W]
 Vmax = ; % s/s bus voltage [V]
+yr = ; % years of mission [yr]
+rscsa = ; % sc distance from sun at aphelion [m]
+
 
 Vm = ; % Voltage margins [V]
 Am = ; %SP area margins [m^2]
@@ -51,4 +55,23 @@ NBp = ceil(Ee/(DODc * NBs * Vb * Vc)); % Number of batteries in parallel % Numbe
 
 EB = NBs * NBp * Vb * Vc; % Total energy of Batteries [W-hr]
 
+Er = Ee/nub; % Recharge energy [W-hr]
+
+Es = Pl * ts; % Energy required during shortest day [W-hr]
+
+Esa = Er + Es; % Total energy from SP during shortest day cycle [W-hr]
+
+Psa = Esa/ts; % Total power needed from SP
+
+dsp = (1-Lyr)^yr % SP degradation over the lifetime [#]
+
 DODt = Ee/EB * 100; % True depth of discharge [%]
+
+qs = (3.06158303309403 * 10^25)/(rscsa)^2; % Power flux from Sun at aphelion [W/m^2]
+
+Asa = Psa/(dsp * alphasp * nusp * qs); % SP area required [m^2]
+
+NSPs = ceil(((1 + (Vm/Vb)) * NBs * Vb)/Vsp); % Number of SP in series [#]
+
+NSPs = ceil(Asa/((1 - (Am/Asa)) * NSps * Asp)); % Number of SP in parallel [#]
+
