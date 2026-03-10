@@ -1,82 +1,483 @@
-%%% --- HOMEWORK 6 REQS --- %
-% A. The maximum eclipse cycle [appropriate time unit, e.g., minutes]
-% B. The shortest day cycle [appropriate time unit, e.g., minutes]
-% C. The solar panel array design area [m2]
-% D. The preliminary total EPS mass [kg]
-% E. The power flux due to solar radiation at aphelion [W/m2]
-% F. The power produced by the solar array [W] as a function of time (plot; use human-readable units for both axes)
+%----------------------
+% ARGO
+% Orbit Light Graphs & Solar Panel Calculations of ARGO
+% Gravational Parameters from JPL
+%----------------------
 
+% ----------------------
+% Program setup
+%-----------------------
 
-% Insert Stuff for plaent data
+clear
+close all
+clc
 
+% ----------------------
+% Time Window Setup
+%-----------------------
 
+start1 = datetime(2042, 01, 01);     % start of departure window
+end1   = datetime(2043, 11, 18);     % end of departure window (apprxo 1 Martian year being 687 Earth days)
+gd1 = (start1 : minutes(1) : end1)';    % generates array with timesteps of 1 minute
+jd1 = juliandate(gd1);               % Convert Gregorian dates to Julian dates
 
-% Preliminary Power Budget
+% ----------------------
+% Retrieve Planetary Ephemeris Data (SCI)
+% ----------------------
+
+% Initialize variables
+r_mars_vec = [];
+v_mars_vec = [];
+
+% 22 full months from Jan 2042 to Oct 2043 for 1 Martian year
+for i = 0:21
+    % Add months to times
+    chunk_start = datetime(2042, 01, 01) + calmonths(i);
+    chunk_end   = datetime(2042, 01, 01) + calmonths(i+1);
+
+    % Get ephemeris data
+    [r_chunk, v_chunk] = get_jpl_horizons('499', chunk_start, chunk_end);
+
+    % Remove last row to avoid duplicate at chunk boundary
+    r_chunk = r_chunk(1:end-1, :);
+    v_chunk = v_chunk(1:end-1, :);
+
+    % Add chunk to main matrix
+    r_mars_vec = [r_mars_vec; r_chunk];
+    v_mars_vec = [v_mars_vec; v_chunk];
+end
+
+% Fetch remaining days: Nov 1 to Nov 18, 2043
+[r_chunk, v_chunk] = get_jpl_horizons('499', datetime(2043,11,01), datetime(2043,11,18));
+% Final ephemeris data matrices
+r_mars_vec = [r_mars_vec; r_chunk];
+v_mars_vec = [v_mars_vec; v_chunk];
+
+% ----------------------
+% Initial Information
+%-----------------------
+mu  = 1.32712440041279e11;             % Grav param of Sun (km^3/s^2)
+mu_mars = 4.2828375214e4;              % Grav param of Mars (km^3/s^2)
+R_mars = 3389.5;                       % Mars Radius (km)
+R_sun = 696300;                        % Sun Radius (km)
+
+% Spacecraft Orbit Parameters
+ecc = 0.75;                             % eccentricity
+inc = 0;                               % deg
+alt = 25000;                           % km
+
+% Orbit Geometry & Initial State
+r_sc_p = R_mars + alt;                         % Radius at Apoapsis (km)
+a      = r_sc_p / (1 + ecc);                   % Semi-Major Axis of S/C Orbit (km)
+v_p    = sqrt(mu_mars * ((2/r_sc_p) - (1/a))); % Vis-Viva Velocity at Periapsis (km/s)
+n      = sqrt(mu_mars / a^3);                  % Mean Motion (rad/s)
+T_period = 2*pi*sqrt(a^3/mu_mars);             % Orbital Period (s)
+
+% Initial State Vectors (MCI Frame)
+r_p_MCI = [r_sc_p; 0; 0];               % Position Vector [x, y, z] (km)
+v_p_MCI = [0; v_p; 0];                  % Velocity Vector [vx, vy, vz] (km/s)
+
+% ----------------------
+% Propagate Orbit
+% ----------------------
+% Define time vector for Spacecraft
+t_total = seconds(end1 - start1);           % Total Duration in Seconds
+dt_sc   = 60;                               % Time step: 60 Seconds
+t_vec   = (0 : dt_sc : t_total)';           % Time Vector from 0 to end
+r_sc_mars = zeros(length(t_vec), 3);        % Pre-allocate Output Matrix [Rx, Ry, Rz] in MCI Frame
+
+for i = 1:length(t_vec)
+    t_now = t_vec(i);
+    M = n * t_now;    % M = M0 + n*t
+    E = M;            % Initial Guess
+    tol = 1e-12;     % Convergence tolerance
+    max_iter = 50;
+    
+    for iter = 1:max_iter
+        f_val = E - ecc*sin(E) - M;       % f(E)
+        f_der = 1 - ecc*cos(E);           % f'(E)
+        
+        step = f_val / f_der;
+        E_new = E - step;
+        
+        if abs(E_new - E) < tol
+            E = E_new;
+            break;
+        end
+        E = E_new;
+    end
+    
+    % Calculate Position in Orbital Plane (MCI)
+    x_orbit = a * (cos(E) - ecc);
+    y_orbit = a * sqrt(1 - ecc^2) * sin(E);
+    z_orbit = 0;
+    
+    % Store in matrix
+    r_sc_mars(i, :) = [x_orbit, y_orbit, z_orbit];
+end
+% ----------------------
+% Plotting to Verify (3D)
+% ----------------------
+figure('Color', 'w');
+hold on;
+grid on;
+axis equal;
+
+% Plot the Spacecraft Trajectory
+plot3(r_sc_mars(:,1), r_sc_mars(:,2), r_sc_mars(:,3), 'b', 'LineWidth', 1.5);
+
+% Load Mars texture image
+mars_texture = imread('mars.jpg'); 
+
+% Generate sphere
+[X, Y, Z] = sphere(100); 
+X = X * R_mars;
+Y = Y * R_mars;
+Z = Z * R_mars;
+
+% Plot textured sphere
+mars_surf = surf(X, Y, Z, ...
+    'CData', mars_texture, ...
+    'FaceColor', 'texturemap', ...
+    'EdgeColor', 'none', ...
+    'FaceLighting', 'none');
+
+% Label PLot
+title('ARGO Trajectory (MCI Frame)', 'FontSize', 16);
+xlabel('X (km)', 'FontSize', 14);
+ylabel('Y (km)', 'FontSize', 14);
+zlabel('Z (km)', 'FontSize', 14);
+
+% Set viewing angle
+view(45, 30);
+
+% ----------------------
+% Subplot
+% ----------------------
+
+% AI used to assist as code was ecountering error
+% Convert vectors into scalars
+r_mars_norms = vecnorm(r_mars_vec, 2, 2);
+r_sc_norms   = vecnorm(r_sc_mars, 2, 2);
+
+% Eclipse angle (rad)
+theta_e = acos(dot(r_mars_vec, r_sc_mars, 2)./(r_mars_norms .* r_sc_norms));
+
+% Umbra cone height (km)
+h_u = (R_mars .* r_mars_norms)./(R_sun - R_mars);
+% Umbra cone angle (rad)
+theta_u = atan(R_mars ./ h_u);
+
+% Penumbra angle (rad)
+theta_p = pi/2 - atan(r_mars_norms./(R_sun + R_mars));
+
+% Fucntion for % sunlight
+S_percent = Scalc(ecc,alt,R_mars,R_sun,mu_mars, r_mars_vec, gd1);
+
+% Subplots of obrital light angles and % sunlight
+figure
+% Plot eclipse angle
+subplot(2,2,1)
+plot(gd1, theta_e)
+ylabel("theta_e [rad]")
+xlabel("time [days]")
+ylim([0 pi]);
+grid on
+% Plot umbra cone angle
+subplot(2,2,2)
+plot(gd1, theta_u, 'LineWidth', 0.5)
+ylabel("theta_u [rad]")
+xlabel("time [days]")
+grid on
+% Plot penumbra angle
+subplot(2,2,3)
+plot(gd1, theta_p)
+ylabel("theta_p [rad]")
+xlabel("time [days]")
+grid on
+% Plot % sunlight
+subplot(2,2,4)
+plot(gd1, S_percent,'LineWidth', 0.5);
+ylabel("% Sunlight")
+xlabel("time [days]")
+ylim([0 100]);
+grid on
+
+% Plot % sunlight figure on own
+figure
+plot(gd1, S_percent,'LineWidth', 0.5);
+ylabel("% Sunlight")
+xlabel("time [days]")
+ylim([0 100]);
+title("ARGO Sunlight Exposure")
+grid on
+
+% ----------------------
+% EPS
+% ----------------------
+
+fprintf('--- EPS Inputs ---\n');
 
 % Batteries (B) collected from trade study
 
 DODc = ; % Depth of disrcharge [%]
+fprintf('Depth of discharge: %.2f%%\n', DODc*100);
 Cb = ; % Nominal Capacity [A-hr]
+fprintf('Nominal Capacity: %.2f A-hr\n', Cb);
 Vb = ; % Average voltage [V]
+fprintf('Average voltage: %.2f V\n', Vb);
 Mb = ; % Mass [kg]
+fprintf('Battery mass: %.2f kg\n', Mb);
 nub = ; % Recharge efficeny [0-1]
+fprintf('Recharge efficiency: %.2f\n', nub);
 
 % Solar Pannel (SP) collected from trade study
 
 Csp = ; % Nominal Current [A]
+fprintf('Nominal Current: %.2f A\n', Csp);
 Vsp = ; % Voltage [V]
+fprintf('Solar panel voltage: %.2f V\n', Vsp);
 alphasp = ; % Absorptivity [0-1]
+fprintf('Absorptivity: %.2f\n', alphasp);
 nusp = ; % Efficeny [0-1]
+fprintf('Solar panel efficiency: %.2f\n', nusp);
 Msp = ; % Mass [kg]
+fprintf('Solar panel mass: %.2f kg\n', Msp);
 Asp = ; % Area per panel [m^2]
+fprintf('Area per panel: %.4f m^2\n', Asp);
 Lyr = ; % Degradation rate for SP
+fprintf('Degradation rate: %.4f\n', Lyr);
+
+% Other Inputs
+
+Pl = ; % peak power [W]
+fprintf('Peak power: %.2f W\n', Pl);
+Vmax = ; % s/s bus voltage [V]
+fprintf('Bus voltage: %.2f V\n', Vmax);
+yr = ; % years of mission [yr]
+fprintf('Mission duration: %.2f years\n', yr);
+Vm = ; % Voltage margins [V]
+fprintf('Voltage margin: %.2f V\n', Vm);
+Am = ; % SP area margins [m^2]
+fprintf('Solar panel area margin: %.4f m^2\n', Am);
 
 % Orbital Characteristics
 
-te = ; % Longest eclipse cycle [hr]
-ts = ; % shortest day cycle [hr]
-Pl = ; % peak power [W]
-Vmax = ; % s/s bus voltage [V]
-yr = ; % years of mission [yr]
-rscsa = ; % sc distance from sun at aphelion [m]
+% Calculate longest eclipse - ai assisted
+in_eclipse = S_percent == 0;
+diff_eclipse = diff([0; in_eclipse; 0]);
+starts = find(diff_eclipse == 1);
+ends   = find(diff_eclipse == -1) - 1;
+durations_min = ends - starts + 1;
+longest_eclipse_min = max(durations_min);
+te  = longest_eclipse_min / 60;
+fprintf('Longest eclipse: %.2f hours\n', te);
 
+% Calculate shortest day - ai assisted
+in_sun = S_percent == 100;
+diff_sun = diff([0; in_sun; 0]);
+starts_sun = find(diff_sun == 1);
+ends_sun   = find(diff_sun == -1) - 1;
+durations_sun_min = ends_sun - starts_sun + 1;
+shortest_day_min = min(durations_sun_min);
+ts  = shortest_day_min / 60;
+fprintf('Shortest day: %.2f hours\n', ts);
 
-Vm = ; % Voltage margins [V]
-Am = ; % SP area margins [m^2]
-
+% Calculate sc at sun aphelion - ai assisted
+r_sc_sun_vec = r_mars_vec + r_sc_mars;
+r_sc_sun_norm = vecnorm(r_sc_sun_vec, 2, 2);
+[max_dist, idx] = max(r_sc_sun_norm);
+rscsa = max_dist * 10^3;
+fprintf('S/C distance from Sun at aphelion: %.2f m (%.4f AU)\n', max_dist * 10^3, max_dist/149597870.7);
 
 % Power Calc
 
+fprintf('\n--- EPS Calculations ---\n');
+
 Ee = Pl * te; % Energy required furing longest eclipse cycle [W-hr]
+fprintf('Energy required during longest eclipse cycle: %.2f W-hr\n', Ee);
 
 NBs = ceil(Vmax/Vb); % Number of batteries in series [#]
+fprintf('Number of batteries in series: %d\n', NBs);
 
 NBp = ceil(Ee/(DODc * NBs * Vb * Vc)); % Number of batteries in parallel % Number of batteries in parallel [#]
+fprintf('Number of batteries in parallel: %d\n', NBp);
 
 EB = NBs * NBp * Vb * Vc; % Total energy of Batteries [W-hr]
+fprintf('Total energy of batteries: %.2f W-hr\n', EB);
 
 Er = Ee/nub; % Recharge energy [W-hr]
+fprintf('Recharge energy: %.2f W-hr\n', Er);
 
 Es = Pl * ts; % Energy required during shortest day [W-hr]
+fprintf('Energy required during shortest day: %.2f W-hr\n', Es);
 
 Esa = Er + Es; % Total energy from SP during shortest day cycle [W-hr]
+fprintf('Total energy from solar panels during shortest day cycle: %.2f W-hr\n', Esa);
 
 Psa = Esa/ts; % Total power needed from SP
+fprintf('Total power needed from solar panels: %.2f W\n', Psa);
 
 dsp = (1-Lyr)^yr % SP degradation over the lifetime [#]
+fprintf('Solar panel degradation over mission lifetime: %.4f\n', dsp);
 
 DODt = Ee/EB * 100; % True depth of discharge [%]
+fprintf('True depth of discharge: %.2f%%\n', DODt);
 
 qs = (3.06158303309403 * 10^25)/(rscsa)^2; % Power flux from Sun at aphelion [W/m^2]
+fprintf('Solar power flux at aphelion: %.4f W/m^2\n', qs);
 
 Asa = Psa/(dsp * alphasp * nusp * qs); % SP area required [m^2]
+fprintf('Solar panel area required: %.4f m^2\n', Asa);
 
 NSPs = ceil(((1 + (Vm/Vb)) * NBs * Vb)/Vsp); % Number of SP in series [#]
+fprintf('Number of solar panels in series: %d\n', NSPs);
 
-NSPp = ceil(Asa/((1 - (Am/Asa)) * NSps * Asp)); % Number of SP in parallel [#]
+NSPp = ceil(Asa/((1 - (Am/Asa)) * NSPs * Asp)); % Number of SP in parallel [#]
+fprintf('Number of solar panels in parallel: %d\n', NSPp);
 
 AsaD = NSPs * NSPp * Asp; % SP design area (final) [m^2]
+fprintf('Solar panel design area (final): %.4f m^2\n', AsaD);
 
 Asam = (AsaD - Asa)/ AsaD * 100; % True SP design margin [%]
+fprintf('True solar panel design margin: %.2f%%\n', Asam);
 
 Mesp = NBs * NBp * Mb + NSPs * NSPp * Msp; % Total EPS mass [kg]
+fprintf('Total EPS mass: %.2f kg\n', Mesp);
+
+function S_percent = Scalc(e,alt,R_mars,R_sun,mu_mars, r_mars_vec, gd)
+    r_a = R_mars + alt;             % apoapsis radius (km)
+    a  = r_a/(1+e);
+    N = length(gd);
+
+    % Preallocate
+    S_percent = zeros(N,1);
+
+    % Mean motion
+    n = sqrt(mu_mars/a^3);
+
+    for k = 1:N
+    
+        t = (k-1)*60;    % 60 seconds per step (1 minute resolution)
+    
+        % Mean anomaly
+        M = n*t;
+    
+        % Solve Kepler's Equation (Newton iteration)
+        E = M;
+        for iter = 1:20
+            E = E - (E - e*sin(E) - M)/(1 - e*cos(E));
+        end
+    
+        % True anomaly
+        nu = 2*atan2(sqrt(1+e)*sin(E/2), sqrt(1-e)*cos(E/2));
+    
+        % Radius
+        r = a*(1 - e*cos(E));
+    
+        % Spacecraft Mars-centered position
+        r_sc_mars = [r*cos(nu), r*sin(nu), 0];
+    
+        % Spacecraft heliocentric position
+        r_sc_sun = r_mars_vec(k,:) + r_sc_mars;
+    
+        % Distances
+        d_sun  = norm(r_sc_sun);
+        d_mars = norm(r_sc_mars);
+    
+        % Angular radii
+        alpha_s = asin( min(1, max(-1, R_sun/d_sun)) );
+        alpha_m = asin( min(1, max(-1, R_mars/d_mars)) );
+    
+        % Angular separation
+        cos_theta = dot(-r_sc_sun, -r_sc_mars)/(d_sun*d_mars);
+        cos_theta = min(1, max(-1, cos_theta));
+        theta = acos(cos_theta);
+    
+        % Eclipse logic
+        if theta >= alpha_s + alpha_m
+            S_percent(k) = 100;
+        
+        elseif alpha_m >= alpha_s && theta <= (alpha_m - alpha_s)
+            S_percent(k) = 0;
+        
+        else
+            % Partial eclipse (safe overlap math)
+            r1 = alpha_s;
+            r2 = alpha_m;
+            d  = theta;
+        
+            % Prevent divide-by-zero
+            if d == 0
+                S_percent(k) = 0;
+            else
+                arg1 = (d^2 + r1^2 - r2^2)/(2*d*r1);
+                arg2 = (d^2 + r2^2 - r1^2)/(2*d*r2);
+            
+                arg1 = min(1,max(-1,arg1));
+                arg2 = min(1,max(-1,arg2));
+            
+                part1 = r1^2 * acos(arg1);
+                part2 = r2^2 * acos(arg2);
+                part3 = 0.5*sqrt(max(0,(-d+r1+r2)*(d+r1-r2)*(d-r1+r2)*(d+r1+r2)));
+            
+                overlap = part1 + part2 - part3;
+                S_percent(k) = 100*(1 - overlap/(pi*r1^2));
+            end
+        end
+    end
+    
+% Clean numerical noise
+S_percent = real(S_percent);
+S_percent(isnan(S_percent)) = 0;
+S_percent = max(0,min(100,S_percent));
+end
+
+% ----------------------
+% JPL HORIZONS API
+% ----------------------
+function [r_vec, v_vec] = get_jpl_horizons(body_id, t_start, t_end)
+    % INPUTS
+    % body_id: ('499' for Mars)
+    % t_start: datetime object
+    % t_end: datetime object
+    base_url = 'https://ssd.jpl.nasa.gov/api/horizons.api';
+    
+    % Format dates for API (YYYY-MM-DD)
+    s_str = datestr(t_start, 'yyyy-mm-dd');
+    e_str = datestr(t_end, 'yyyy-mm-dd');
+    
+        % Fetch Data using explicit Name-Value pairs
+        raw_text = webread(base_url, ...
+            'format', 'text', ...
+            'COMMAND', body_id, ...
+            'OBJ_DATA', 'YES', ...
+            'MAKE_EPHEM', 'YES', ...
+            'EPHEM_TYPE', 'VECTORS', ...
+            'CENTER', '@10', ...
+            'START_TIME', s_str, ...
+            'STOP_TIME', e_str, ...
+            'STEP_SIZE', '1m', ...
+            'CSV_FORMAT', 'YES');
+            
+        % Parse Text
+        % Data is located between $$SOE and $$EOE markers
+        soe_idx = strfind(raw_text, '$$SOE');
+        eoe_idx = strfind(raw_text, '$$EOE');
+        
+        if isempty(soe_idx) || isempty(eoe_idx)
+             error('No Ephemeris Data Found between markers.');
+        end
+
+        % Extract the CSV content segment
+        data_str = raw_text(soe_idx+5 : eoe_idx-1);
+        
+        % Read the data using textscan
+        % Format: JDTDB, Calendar, X, Y, Z, VX, VY, VZ
+        C = textscan(data_str, '%f %s %f %f %f %f %f %f %[^\n]', ...
+            'Delimiter', ',', 'MultipleDelimsAsOne', false);
+        % Extract Position (km) and Velocity (km/s)
+        % Columns: 3=X, 4=Y, 5=Z, 6=VX, 7=VY, 8=VZ
+        r_vec = [C{3}, C{4}, C{5}];
+        v_vec = [C{6}, C{7}, C{8}];
+end
