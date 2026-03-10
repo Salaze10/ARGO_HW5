@@ -73,5 +73,10 @@ Asa = Psa/(dsp * alphasp * nusp * qs); % SP area required [m^2]
 
 NSPs = ceil(((1 + (Vm/Vb)) * NBs * Vb)/Vsp); % Number of SP in series [#]
 
-NSPs = ceil(Asa/((1 - (Am/Asa)) * NSps * Asp)); % Number of SP in parallel [#]
+NSPp = ceil(Asa/((1 - (Am/Asa)) * NSps * Asp)); % Number of SP in parallel [#]
 
+AsaD = NSPs * NSPp * Asp; % SP design area (final) [m^2]
+
+Asam = (AsaD - Asa)/ AsaD * 100; % True SP design margin [%]
+
+Mesp = NBs * NBp * Mb + NSPs * NSPp * Msp; % Total EPS mass [kg]
