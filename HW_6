@@ -5,3 +5,19 @@
 % D. The preliminary total EPS mass [kg]
 % E. The power flux due to solar radiation at aphelion [W/m2]
 % F. The power produced by the solar array [W] as a function of time (plot; use human-readable units for both axes)
+
+
+% Insert Stuff for plaent data
+
+
+
+% Preliminary Power Budget
+
+% Batteries [B] collected from traed study
+DODc = ; %Depth of disrcharge [%]
+Cb = ; % Nominal Capacity [A-hr]
+Vb = ; % Average voltage [V]
+Mb = ; % Mass [kg]
+nub = ; % Recharge efficeny [0-1]
+
+%
