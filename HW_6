@@ -42,7 +42,7 @@ rscsa = ; % sc distance from sun at aphelion [m]
 
 
 Vm = ; % Voltage margins [V]
-Am = ; %SP area margins [m^2]
+Am = ; % SP area margins [m^2]
 
 
 % Power Calc
