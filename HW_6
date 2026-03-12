@@ -253,7 +253,7 @@ Pl = 60000; % peak power [W]
 fprintf('Peak power: %.2f W\n', Pl);
 Vmax = 120; % s/s bus voltage [V]
 fprintf('Bus voltage: %.2f V\n', Vmax);
-yr = 30; % years of mission [yr]
+yr = 15; % years of mission [yr]
 fprintf('Mission duration: %.2f years\n', yr);
 Vm = Vmax * 0.01; % Voltage margins 1% of Vmax [V]
 fprintf('Voltage margin: %.2f V\n', Vm);
