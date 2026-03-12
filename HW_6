@@ -253,7 +253,7 @@ fprintf('Degradation rate: %.4f\n', Lyr);
 
 % Other Inputs
 
-Pl = 60000/60; % peak power [W]
+Pl = 60000; % peak power [W]
 fprintf('Peak power: %.2f W\n', Pl);
 Vmax = ; % s/s bus voltage [V]
 fprintf('Bus voltage: %.2f V\n', Vmax);
