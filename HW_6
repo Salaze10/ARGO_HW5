@@ -242,7 +242,7 @@ Vsp = 2.726; % Voltage [V]
 fprintf('Solar panel voltage: %.2f V\n', Vsp);
 alphasp = ; % Absorptivity [0-1]
 fprintf('Absorptivity: %.2f\n', alphasp);
-nusp = ; % Efficeny [0-1]
+nusp = 29.5; % Efficeny [0-1]
 fprintf('Solar panel efficiency: %.2f\n', nusp);
 Msp = ; % Mass [kg]
 fprintf('Solar panel mass: %.2f kg\n', Msp);
