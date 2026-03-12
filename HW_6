@@ -259,9 +259,9 @@ Vmax = 120; % s/s bus voltage [V]
 fprintf('Bus voltage: %.2f V\n', Vmax);
 yr = 30; % years of mission [yr]
 fprintf('Mission duration: %.2f years\n', yr);
-Vm = ; % Voltage margins [V]
+Vm = Vmax * 0.01; % Voltage margins 1% of Vmax [V]
 fprintf('Voltage margin: %.2f V\n', Vm);
-Am = ; % SP area margins [m^2]
+Am = Asp * 0.1; % SP area margins %10 of Asp [m^2]
 fprintf('Solar panel area margin: %.4f m^2\n', Am);
 
 % Orbital Characteristics
