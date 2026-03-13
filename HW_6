@@ -227,10 +227,10 @@ Cb = 200; % Nominal Capacity [A-hr]
 fprintf('Nominal Capacity: %.2f A-hr\n', Cb);
 Vb = 3.6; % Average voltage [V]
 fprintf('Average voltage: %.2f V\n', Vb);
-Mb = 100; % Mass [kg]
-fprintf('Battery mass: %.2f kg\n', Mb);
 nub = 0.99; % Recharge efficeny [0-1]
 fprintf('Recharge efficiency: %.2f\n', nub);
+SpecEnergy = 90; % Specific Energy [Kh/kg]
+fprintf('Specific Energy: %.2f\n', SpecEnergy);
 
 % Solar Pannel (SP) updated with datasheet and mass density
 % 84 mg/cm^2 = 0.84 kg/m^2. We apply a 2.0x factor for panel structure/harness.
@@ -302,6 +302,9 @@ fprintf('Number of batteries in parallel: %d\n', NBp);
 EB = NBs * NBp * Vb * Cb; % Total energy of Batteries [W-hr]
 fprintf('Total energy of batteries: %.2f W-hr\n', EB);
 
+Mb = (EB/ SpecEnergy) / (NBs * NBp); % Mass / battery [kg]
+fprintf('Per Battery mass: %.2f kg\n', Mb);
+
 Er = Ee/nub; % Recharge energy [W-hr]
 fprintf('Recharge energy: %.2f W-hr\n', Er);
 
@@ -320,12 +323,12 @@ fprintf('Solar panel degradation over mission lifetime: %.4f\n', dsp);
 DODt = Ee/EB * 100; % True depth of discharge [%]
 fprintf('True depth of discharge: %.2f%%\n', DODt);
 
-qs = (3.06158303309403 * 10^25)/(rscsa)^2; % Power flux from Sun at aphelion [W/m^2]
+qs = (3.84440561265196 * 10^26)/(4*pi*(rscsa)^2); % Power flux from Sun at aphelion [W/m^2]
 fprintf('Solar power flux at aphelion: %.4f W/m^2\n', qs);
 
 % Final area sizing using decimal efficiency
 Asa = Psa/(dsp * alphasp * nusp * qs); % SP area required [m^2]
-fprintf('Total solar panel area required: %.4f m^2\n', Asa);
+fprintf('Total Solar panel area required: %.4f m^2\n', Asa);
 
 % Sizing strings based on Vmp (Working Voltage)
 NSPs = ceil(Vmax / Vsp); 
