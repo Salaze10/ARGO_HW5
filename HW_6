@@ -343,6 +343,38 @@ fprintf('True solar panel design margin: %.2f%%\n', Asam);
 Mesp = NBs * NBp * Mb + NSPs * NSPp * Msp; % Total EPS mass [kg]
 fprintf('Total EPS mass: %.2f kg\n', Mesp);
 
+% ----------------------
+% Solar Power Production Over Time
+% ----------------------
+% Calculate dynamic solar flux at each time step [W/m^2]
+% Uses the distance from the Sun to the S/C in meters
+qs_dynamic = (3.84440561265196 * 10^26) ./ (4 * pi * (r_sc_sun_norm * 10^3).^2);
+
+% Calculate Instantaneous Power Produced [W]
+% Formula: Flux * Design Area * Absorptivity * Efficiency * Degradation * Sunlight %
+P_produced = qs_dynamic .* AsaD .* alphasp .* nusp .* dsp .* (S_percent / 100);
+
+% Plotting Power Production (Full Mission)
+figure('Color', 'w');
+plot(gd1, P_produced, 'Color', [0.9290 0.6940 0.1250], 'LineWidth', 0.5);
+ylabel('Power Produced [W]', 'FontSize', 14);
+xlabel('Time', 'FontSize', 14);
+title('ARGO Solar Array Power Output Over 1 Martian Year', 'FontSize', 16);
+grid on;
+
+% Plotting Power Production (7-Day Detail)
+% Added because 687 days of high-frequency data looks like a solid block
+figure('Color', 'w');
+plot(gd1, P_produced, 'Color', [0.9290 0.6940 0.1250], 'LineWidth', 1.5);
+xlim([gd1(1) gd1(1) + days(7)]); % Zoom into first week
+ylabel('Power Produced [W]', 'FontSize', 14);
+xlabel('Time', 'FontSize', 14);
+title('ARGO Power Production (Over one week)', 'FontSize', 16);
+grid on;
+
+fprintf('\n--- Power Output Summary ---\n');
+fprintf('Peak Power Produced (Perihelion): %.2f W\n', max(P_produced));
+fprintf('Minimum Power Produced (Aphelion): %.2f W\n', min(P_produced(S_percent > 0)));
 
 function S_percent = Scalc(e,alt,R_mars,R_sun,mu_mars, r_mars_vec, gd)
     r_a = R_mars + alt;             % apoapsis radius (km)
